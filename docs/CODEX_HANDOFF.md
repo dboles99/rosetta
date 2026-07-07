@@ -31,21 +31,21 @@ zero prior context. Update the "Current state" section after every task.
 
 ## Current state
 
-**Last updated:** after Task 9 review approved, before Task 10 dispatch.
+**Last updated:** after Task 10 CLI implementation was recovered, verified, and committed by Codex.
 
 **Completed (all steps `- [x]`, all reviewed and approved):** Tasks 1-9.
 
-**In progress:** Task 10 (CLI) — brief generated, implementer not yet dispatched.
+**Completed by Codex continuation:** Task 10 (CLI). `src/rosetta_core/cli.py` and `tests/test_cli.py` were present as untracked files after the handoff; Codex verified the full suite with `PYTHONPATH=src python3 -m pytest -q -s` (`49 passed`), recorded `task-10-report.md`, checked off the plan, and committed the files.
 
 **Not started:** Tasks 11 (dogfooding decision log), 12 (end-to-end test).
 
-**Latest commit on `rosetta-core-v1`:** `86190d5` — "Add runtime loader with machine-to-human fallback"
+**Latest commit on `rosetta-core-v1`:** Task 10 commit — "Add rosetta CLI: sync, compile, validate, expand"
 
 **Two cross-cutting fixes already applied that a fresh implementer must know about** (both already in the code — nothing to redo, just don't reintroduce the bugs):
 - Every production `Path.write_text()` call must pass `newline="\n"` explicitly (Windows would otherwise silently write `\r\n`). Already applied in `fields.py`, `lockfile.py`, `sync.py`. Any new file-writing code must do the same.
 - `validate_fields()` in `schema.py` coerces stringly-typed values (CPN packets always parse fields as `str`) to the schema's declared `number`/`integer` type before validating. This is why `loader.py` and any future CLI/validation code does not need to do its own type conversion — just pass parsed fields straight to `validate_fields`.
 
-**Full test suite status:** 44/44 passing as of commit `86190d5`. Run `pytest -v` from the worktree root to confirm before continuing (tests use `pythonpath = ["src"]` from `pyproject.toml`, no install required, though `pip install -e ".[dev]"` also works).
+**Full test suite status:** 49/49 passing after Task 10. Run `PYTHONPATH=src python3 -m pytest -q -s` from the worktree root if pytest capture hits temp-file issues in WSL.
 
 **After Task 12 completes:** the user has requested a separate, second body of work — designing and building a benchmark suite comparing human-readable vs. machine-readable prompt performance across Azure Translation, Azure OpenAI, Claude, Codex, Cline, and Ollama (read/implementation speed, efficiency, completeness), with a schema, a rubric, and a results spreadsheet. This has **not been designed yet** — it needs its own brainstorming/planning pass, not a continuation of this plan's tasks. Do not start it before Task 12 is done; do the final whole-branch review only after both this plan's Task 12 and the benchmark work are complete.
 

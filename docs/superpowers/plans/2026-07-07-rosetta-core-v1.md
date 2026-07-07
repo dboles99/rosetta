@@ -1026,7 +1026,7 @@ git commit -m "Add runtime loader with machine-to-human fallback"
 - Consumes: `sync`/`SyncConflict` (Task 8), `FieldsStore` (Task 4), `validate_fields`/`SchemaValidationError` (Task 3), `render_human_doc`/`extract_notes` (Task 6).
 - Produces: `main(argv: list[str] | None = None) -> int`, wired as the `rosetta` console script via `pyproject.toml` (Task 1). Subcommands: `sync`, `validate`, `compile` (alias for `sync`, documented as the friendlier name for first-time creation), `expand` (prints the current human-doc rendering without writing files or touching the lock).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_cli.py
@@ -1085,12 +1085,12 @@ def test_expand_command_prints_human_doc_without_writing(tmp_path: Path, capsys)
     assert not (tmp_path / "policy.md").exists()
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_cli.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.cli'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/cli.py
@@ -1165,12 +1165,12 @@ if __name__ == "__main__":
     raise SystemExit(main())
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_cli.py -v`
 Expected: 5 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/cli.py tests/test_cli.py
