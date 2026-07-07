@@ -76,6 +76,32 @@ def test_editing_notes_region_resyncs_but_preserves_fields(tmp_path: Path):
     assert (tmp_path / "entity_resolution.cpn").read_text(encoding="utf-8") == cpn_before
 
 
+def test_machine_to_human_sync_is_idempotent(tmp_path: Path):
+    _write_fields(tmp_path, "entity_resolution", FIELDS)
+    sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
+    cpn_path = tmp_path / "entity_resolution.cpn"
+    cpn_path.write_text(cpn_path.read_text(encoding="utf-8").replace("0.92", "0.95"), encoding="utf-8")
+
+    result = sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
+    assert result == "machine-to-human"
+
+    result_again = sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
+    assert result_again == "no-op"
+
+
+def test_human_to_machine_sync_is_idempotent(tmp_path: Path):
+    _write_fields(tmp_path, "entity_resolution", FIELDS)
+    sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
+    md_path = tmp_path / "entity_resolution.md"
+    md_path.write_text(md_path.read_text(encoding="utf-8").replace("0.92", "0.97"), encoding="utf-8")
+
+    result = sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
+    assert result == "human-to-machine"
+
+    result_again = sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
+    assert result_again == "no-op"
+
+
 def test_both_sides_changed_raises_conflict(tmp_path: Path):
     _write_fields(tmp_path, "entity_resolution", FIELDS)
     sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
