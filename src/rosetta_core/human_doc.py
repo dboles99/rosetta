@@ -27,19 +27,41 @@ def render_human_doc(title: str, schema_ver: str, fields: dict, field_descriptio
     return "\n".join(lines) + "\n"
 
 
+class MalformedRosettaDoc(ValueError):
+    """Raised when a Rosetta human document is missing an expected marker."""
+
+
 def extract_fields_comment(doc_text: str) -> dict:
-    start = doc_text.index(FIELDS_COMMENT_PREFIX) + len(FIELDS_COMMENT_PREFIX)
-    end = doc_text.index(COMMENT_SUFFIX, start)
+    try:
+        start = doc_text.index(FIELDS_COMMENT_PREFIX) + len(FIELDS_COMMENT_PREFIX)
+    except ValueError:
+        raise MalformedRosettaDoc(f"missing {FIELDS_COMMENT_PREFIX.strip()} marker") from None
+    try:
+        end = doc_text.index(COMMENT_SUFFIX, start)
+    except ValueError:
+        raise MalformedRosettaDoc(f"missing {FIELDS_COMMENT_PREFIX.strip()} marker") from None
     return json.loads(doc_text[start:end])
 
 
 def extract_schema_ver_comment(doc_text: str) -> str:
-    start = doc_text.index(SCHEMA_VER_COMMENT_PREFIX) + len(SCHEMA_VER_COMMENT_PREFIX)
-    end = doc_text.index(COMMENT_SUFFIX, start)
+    try:
+        start = doc_text.index(SCHEMA_VER_COMMENT_PREFIX) + len(SCHEMA_VER_COMMENT_PREFIX)
+    except ValueError:
+        raise MalformedRosettaDoc(f"missing {SCHEMA_VER_COMMENT_PREFIX.strip()} marker") from None
+    try:
+        end = doc_text.index(COMMENT_SUFFIX, start)
+    except ValueError:
+        raise MalformedRosettaDoc(f"missing {SCHEMA_VER_COMMENT_PREFIX.strip()} marker") from None
     return doc_text[start:end]
 
 
 def extract_notes(doc_text: str) -> str:
-    start = doc_text.index(NOTES_START) + len(NOTES_START)
-    end = doc_text.index(NOTES_END)
+    try:
+        start = doc_text.index(NOTES_START) + len(NOTES_START)
+    except ValueError:
+        raise MalformedRosettaDoc(f"missing {NOTES_START} marker") from None
+    try:
+        end = doc_text.index(NOTES_END, start)
+    except ValueError:
+        raise MalformedRosettaDoc(f"missing {NOTES_END} marker") from None
     return doc_text[start:end].strip()
