@@ -69,7 +69,7 @@ rosetta/
 **Interfaces:**
 - Produces: an installable package `rosetta_core` importable from `tests/`, and a `pytest` command that runs cleanly with zero tests collected.
 
-- [ ] **Step 1: Create `pyproject.toml`**
+- [x] **Step 1: Create `pyproject.toml`**
 
 ```toml
 [project]
@@ -99,7 +99,7 @@ pythonpath = ["src"]
 testpaths = ["tests"]
 ```
 
-- [ ] **Step 2: Create `.gitattributes` to force LF on all text artifacts**
+- [x] **Step 2: Create `.gitattributes` to force LF on all text artifacts**
 
 ```
 * text=auto eol=lf
@@ -108,19 +108,19 @@ testpaths = ["tests"]
 *.json text eol=lf
 ```
 
-- [ ] **Step 3: Create the empty package `src/rosetta_core/__init__.py`**
+- [x] **Step 3: Create the empty package `src/rosetta_core/__init__.py`**
 
 ```python
 """Rosetta core: dual-representation (human + machine) prompts and metadata."""
 ```
 
-- [ ] **Step 4: Install in editable/dev mode and verify pytest collects zero tests without error**
+- [x] **Step 4: Install in editable/dev mode and verify pytest collects zero tests without error**
 
 Run: `pip install -e ".[dev]"`
 Then run: `pytest -q`
 Expected: `no tests ran` (exit code 5) or `0 items` — no import errors.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pyproject.toml .gitattributes src/rosetta_core/__init__.py
@@ -140,7 +140,7 @@ git commit -m "Scaffold rosetta-core package"
 **Interfaces:**
 - Produces: `sha256_text(text: str) -> str`, used by every later task that needs staleness/conflict hashes.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_hashing.py
@@ -159,12 +159,12 @@ def test_known_sha256_of_empty_string():
     assert sha256_text("") == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"[:64]
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_hashing.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.hashing'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/hashing.py
@@ -175,12 +175,12 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_hashing.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/hashing.py tests/test_hashing.py
@@ -201,7 +201,7 @@ git commit -m "Add sha256_text hashing helper"
 - Consumes: nothing from earlier tasks.
 - Produces: `SchemaValidationError(errors: list[str])` and `validate_fields(fields: dict, schema: dict) -> None` (raises `SchemaValidationError` on failure), used by `loader.py` (Task 9) and `cli.py` (Task 10).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_schema.py
@@ -235,12 +235,12 @@ def test_bad_enum_value_raises():
     assert len(exc_info.value.errors) == 1
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_schema.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.schema'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/schema.py
@@ -264,12 +264,12 @@ def validate_fields(fields: dict, schema: dict) -> None:
         raise SchemaValidationError(messages)
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_schema.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/schema.py tests/test_schema.py
@@ -290,7 +290,7 @@ git commit -m "Add JSON Schema validation wrapper"
 - Consumes: nothing from earlier tasks.
 - Produces: `FieldsStore(schema_ver: str, fields: dict)` with `.load(path: Path) -> FieldsStore` (classmethod), `.save(path: Path) -> None`, and `.fields_with_schema_ver() -> dict` (merges `SCHEMA_VER` into a copy of `fields`). Used by `sync.py` (Task 8), `loader.py` (Task 9), `cli.py` (Task 10).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_fields.py
@@ -327,12 +327,12 @@ def test_fields_with_schema_ver_merges():
     assert store.fields == {"TASK": "VERIFICATION"}
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_fields.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.fields'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/fields.py
@@ -358,12 +358,12 @@ class FieldsStore:
         return {**self.fields, "SCHEMA_VER": self.schema_ver}
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_fields.py -v`
 Expected: 3 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/fields.py tests/test_fields.py
@@ -384,7 +384,7 @@ git commit -m "Add FieldsStore canonical load/save"
 - Consumes: nothing from earlier tasks (pure functions over `dict`/`str`).
 - Produces: `serialize_packet(schema_ver: str, fields: dict) -> str` and `parse_packet(text: str) -> tuple[str, dict]` (returns `(schema_ver, fields)`, all field values as `str`). Used by `sync.py` (Task 8), `loader.py` (Task 9).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_cpn.py
@@ -432,12 +432,12 @@ def test_parse_ignores_blank_lines():
     assert fields == {"TASK": "VERIFICATION"}
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_cpn.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.cpn'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/cpn.py
@@ -474,12 +474,12 @@ def parse_packet(text: str) -> tuple[str, dict]:
     return schema_ver, fields
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_cpn.py -v`
 Expected: 7 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/cpn.py tests/test_cpn.py
@@ -502,7 +502,7 @@ git commit -m "Add CPN canonical serializer/parser"
 - Consumes: nothing from earlier tasks.
 - Produces: `render_human_doc(title: str, schema_ver: str, fields: dict, field_descriptions: dict, notes: str) -> str`, `extract_fields_comment(doc_text: str) -> dict` (returns raw fields only, no `SCHEMA_VER`), `extract_schema_ver_comment(doc_text: str) -> str`, `extract_notes(doc_text: str) -> str`. Used by `sync.py` (Task 8), `cli.py` (Task 10).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_human_doc.py
@@ -548,12 +548,12 @@ def test_notes_region_is_editable_independent_of_fields():
     assert extract_fields_comment(hand_edited) == FIELDS
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_human_doc.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.human_doc'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/human_doc.py
@@ -604,12 +604,12 @@ def extract_notes(doc_text: str) -> str:
     return doc_text[start:end].strip()
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_human_doc.py -v`
 Expected: 5 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/human_doc.py tests/test_human_doc.py
@@ -630,7 +630,7 @@ git commit -m "Add human doc renderer/parser with lossless field round-trip"
 - Consumes: nothing from earlier tasks.
 - Produces: `Lockfile(human_hash: str, machine_hash: str)` with `.load_or_default(path: Path) -> Lockfile` (classmethod, returns `Lockfile("", "")` if the file doesn't exist) and `.save(path: Path) -> None`. Used by `sync.py` (Task 8).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_lockfile.py
@@ -652,12 +652,12 @@ def test_save_then_load_round_trips(tmp_path: Path):
     assert loaded.machine_hash == "def"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_lockfile.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.lockfile'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/lockfile.py
@@ -684,12 +684,12 @@ class Lockfile:
 
 `newline="\n"` is required here (not just `encoding="utf-8"`): `Path.write_text`'s default `newline=None` translates every `\n` to `os.linesep` on write, which is `\r\n` on Windows — silently violating the Global Constraints' "\n line endings, enforced in code" requirement on the platform this repo is developed on. This was caught by task review on Task 4's identical pattern; every production write of a Rosetta-generated file must pass `newline="\n"` explicitly.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_lockfile.py -v`
 Expected: 2 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/lockfile.py tests/test_lockfile.py
@@ -710,7 +710,7 @@ git commit -m "Add sync lockfile"
 - Consumes: `FieldsStore` (Task 4: `.load`, `.save`, `.schema_ver`, `.fields`), `serialize_packet`/`parse_packet` (Task 5), `render_human_doc`/`extract_fields_comment`/`extract_schema_ver_comment`/`extract_notes` (Task 6), `Lockfile` (Task 7: `.load_or_default`, `.save`, `.human_hash`, `.machine_hash`), `sha256_text` (Task 2).
 - Produces: `SyncConflict(differing_keys: list[str])` (exception) and `sync(name: str, directory: Path, title: str, field_descriptions: dict) -> str` (returns one of `"bootstrap"`, `"human-to-machine"`, `"machine-to-human"`, `"no-op"`). Used by `cli.py` (Task 10).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_sync.py
@@ -806,12 +806,12 @@ def test_both_sides_changed_raises_conflict(tmp_path: Path):
     assert "ID_THRESHOLD" in exc_info.value.differing_keys
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_sync.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.sync'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/sync.py
@@ -895,12 +895,12 @@ def sync(name: str, directory: Path, title: str, field_descriptions: dict) -> st
     return "no-op"
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_sync.py -v`
 Expected: 6 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/sync.py tests/test_sync.py
@@ -921,7 +921,7 @@ git commit -m "Add bidirectional sync engine with conflict detection"
 - Consumes: `parse_packet` (Task 5), `validate_fields`/`SchemaValidationError` (Task 3).
 - Produces: `PacketUnavailable(Exception)` and `load_prompt(name: str, directory: Path, schema: dict) -> str`. This is the function OSTINT/Thesis-tool integrations (future plans) will call at runtime.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_loader.py
@@ -962,12 +962,12 @@ def test_raises_when_both_missing(tmp_path: Path):
         load_prompt("policy", tmp_path, SCHEMA)
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_loader.py -v`
 Expected: FAIL with `ModuleNotFoundError: No module named 'rosetta_core.loader'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # src/rosetta_core/loader.py
@@ -1000,12 +1000,12 @@ def load_prompt(name: str, directory: Path, schema: dict) -> str:
     raise PacketUnavailable(f"neither {cpn_path} nor {md_path} exists or is valid")
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_loader.py -v`
 Expected: 4 passed
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/rosetta_core/loader.py tests/test_loader.py
