@@ -23,6 +23,8 @@ ID_THRESHOLD=.92
 
 This spec generalizes that idea into a standalone system usable across all of the user's applications, for prompts, metadata, and configuration alike.
 
+A second, independent precedent exists in `pseudocode-ai-workflows` (`Documents/pseudocode-ai-workflows`): a mature pipeline that compiles a contract-annotated pseudocode DSL (`PURPOSE`/`INPUTS`/`OUTPUTS`/`REQUIRES`/`ENSURES`/`TIMEOUT`/`RETRY`, structured control flow) into executable Python, with a CI quality gate (codespell → lint → convert → pytest+coverage). It proves the "structured, keyword-driven, human-legible AND machine-parseable" grammar works in practice, but it is strictly one-directional (`.pseudo → .py`, never the reverse) and has no conflict detection if the generated `.py` is hand-edited — exactly the gap Rosetta's bidirectional sync closes. Rosetta generalizes this pattern as a second artifact kind (see "Artifact kinds" below) rather than forking its code.
+
 ## Goals
 
 - One canonical dual-representation system: a compact machine-readable form and a human-readable form, always in sync.
@@ -38,6 +40,7 @@ This spec generalizes that idea into a standalone system usable across all of th
 - Not an LLM-based reconciliation engine. Conflicts are surfaced to a human, not auto-merged by an LLM.
 - Not a general-purpose templating engine or document generator.
 - Not tied to any single LLM provider's prompt format — the CPN notation and schema validation are provider-agnostic; provider-specific cache-control wiring is a thin adapter layer.
+- Not, in V1, a code-generation engine. ProgramSpec (compiling contract-annotated pseudocode to executable code) is a named future artifact kind, not part of the first implementation.
 
 ## Naming
 
@@ -45,6 +48,20 @@ This spec generalizes that idea into a standalone system usable across all of th
 - **CPN (Compact Packet Notation)** — the flat `KEY=VALUE` / nested `KEY.SUBKEY=VALUE` dialect the compiler emits.
 
 ## Architecture
+
+### Artifact kinds
+
+Rosetta is a shared **engine** (canonical store → generated views → hash-based sync → conflict detection) plus pluggable **artifact kinds**, each defining its own canonical schema and view renderers. A flat fields store can represent an OSTINT-style policy packet, but it cannot represent a full pseudocode program (functions, `TRY`/`CATCH`, `PARALLEL FOR EACH`, control flow) — so rather than force one data shape to cover both, each kind owns its shape:
+
+| | **PacketSpec** (V1, this spec) | **ProgramSpec** (V2, deferred) |
+|---|---|---|
+| Canonical shape | flat/nested key-value fields | structured AST: purpose/inputs/outputs/contracts/control-flow body |
+| Machine view | `.cpn` compact packet | target source code (Python, etc.) |
+| Human view | auto-narrative `.md` + notes region | pseudocode-style `.md` rendering + notes region |
+| Vocabulary precedent | — | `REQUIRES`/`ENSURES`/`TIMEOUT`/`RETRY`, borrowed conceptually from `pseudocode-ai-workflows` |
+| Consumption-time guarantee | **runtime fallback ordering** — the `.cpn` packet is sent to the LLM normally; the human `.md` is sent only if the packet is missing or invalid | **CI-time drift gate** — recompile from canonical, diff against committed code, fail the build loudly on drift; no runtime fallback, since silently substituting anything for code about to execute is unsafe |
+
+Both kinds share the same sync engine and conflict-detection rule below. **Scope for the first implementation is PacketSpec only** — it's what OSTINT needs now and is fully specified in this document. ProgramSpec is a named extension point for later; no code is forked from `pseudocode-ai-workflows`, only its grammar vocabulary and CI pipeline shape.
 
 ### Canonical store, not either file
 
@@ -180,12 +197,13 @@ loader refuses/warns if the packet's major version != the loader's supported maj
 ## Delivery plan
 
 - New standalone repo (this one: `rosetta`), versioned and published independently.
-- Core package (`rosetta-core`): fields store model, CPN compiler/serializer, `.md` renderer, sync engine, JSON Schema validator, runtime loader with fallback.
-- CLI (`rosetta compile|validate|sync|expand`).
-- OSTINT is the first consumer, via a path dependency during development; other projects (Thesis-formatting-tool-mvp, ue-docxbridge) adopt once proven.
+- Core package (`rosetta-core`): a kind-agnostic engine (canonical store, sync, conflict detection, lockfile) plus a `PacketSpec` kind implementation (fields store model, CPN compiler/serializer, `.md` renderer, JSON Schema validator, runtime loader with fallback). `ProgramSpec` is a second kind added later against the same engine interface.
+- CLI (`rosetta compile|validate|sync|expand`), kind-aware (`--kind packet` default; `--kind program` once V2 lands).
+- OSTINT is the first consumer, via a path dependency during development; other projects (Thesis-formatting-tool-mvp, ue-docxbridge) adopt once proven. `pseudocode-ai-workflows` is a candidate future consumer once ProgramSpec exists, but is not touched by V1.
 
 ## Open questions
 
 - Exact serialization rules for nested dict-literal CPN fields (e.g. the weighted per-source-class blocks from the OSTINT brainstorm) — needs a formal grammar, not just examples.
 - Whether `rosetta sync` runs as a pre-commit hook, a CI check, or both.
 - Publishing mechanism (private package index vs. path/git dependency across projects) — deferred until the core package is proven in OSTINT.
+- The exact engine/kind interface boundary (what `PacketSpec` and a future `ProgramSpec` must both implement) — deferred until ProgramSpec is scoped in V2; V1 should avoid over-abstracting this prematurely.
