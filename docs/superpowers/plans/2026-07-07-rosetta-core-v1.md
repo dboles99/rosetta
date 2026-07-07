@@ -12,7 +12,7 @@
 
 - Python 3.11+ only; no other runtime dependency besides `jsonschema` and `pytest`.
 - All file I/O uses `encoding="utf-8"` explicitly — never rely on platform default encoding.
-- All generated files (`.cpn`, `.md`, `.fields.json`, `.rosetta.lock`) use `\n` line endings, enforced in code (`.splitlines()` + explicit `"\n".join(...)`), independent of git's checkout line-ending behavior.
+- All generated files (`.cpn`, `.md`, `.fields.json`, `.rosetta.lock`) use `\n` line endings, enforced in code (`.splitlines()` + explicit `"\n".join(...)`), independent of git's checkout line-ending behavior. **Every production `Path.write_text` call writing a generated file must pass `newline="\n"` explicitly** — the default `newline=None` translates `\n` to `os.linesep` on write, which is `\r\n` on Windows, silently defeating this constraint. (Test-only `write_text` calls that simulate hand-edits or corruption in a `tmp_path` fixture are exempt — this applies to production code paths.)
 - Repo enforces LF on checkout via `.gitattributes` (Task 1) so the canonical serialization the design relies on for provider prompt-cache stability isn't silently rewritten to CRLF by Windows git checkout.
 - V1 field values are restricted to `str`, `int`, `float` — no lists/bools/nested dicts (matches spec's "Open questions": nested dict-literal fields are deferred to a formal grammar later).
 - No network calls anywhere in `rosetta-core` or its tests.
@@ -679,8 +679,10 @@ class Lockfile:
 
     def save(self, path: Path) -> None:
         data = {"human_hash": self.human_hash, "machine_hash": self.machine_hash}
-        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8", newline="\n")
 ```
+
+`newline="\n"` is required here (not just `encoding="utf-8"`): `Path.write_text`'s default `newline=None` translates every `\n` to `os.linesep` on write, which is `\r\n` on Windows — silently violating the Global Constraints' "\n line endings, enforced in code" requirement on the platform this repo is developed on. This was caught by task review on Task 4's identical pattern; every production write of a Rosetta-generated file must pass `newline="\n"` explicitly.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -857,8 +859,8 @@ def sync(name: str, directory: Path, title: str, field_descriptions: dict) -> st
     if never_synced:
         new_machine = serialize_packet(store.schema_ver, store.fields)
         new_human = render_human_doc(title, store.schema_ver, store.fields, field_descriptions, notes="")
-        cpn_path.write_text(new_machine, encoding="utf-8")
-        md_path.write_text(new_human, encoding="utf-8")
+        cpn_path.write_text(new_machine, encoding="utf-8", newline="\n")
+        md_path.write_text(new_human, encoding="utf-8", newline="\n")
         Lockfile(human_hash=sha256_text(new_human), machine_hash=sha256_text(new_machine)).save(lock_path)
         return "bootstrap"
 
@@ -877,7 +879,7 @@ def sync(name: str, directory: Path, title: str, field_descriptions: dict) -> st
         store.save(fields_path)
         notes = extract_notes(human_text)
         new_human = render_human_doc(title, store.schema_ver, store.fields, field_descriptions, notes)
-        md_path.write_text(new_human, encoding="utf-8")
+        md_path.write_text(new_human, encoding="utf-8", newline="\n")
         Lockfile(human_hash=sha256_text(new_human), machine_hash=sha256_text(machine_text)).save(lock_path)
         return "machine-to-human"
 
@@ -886,7 +888,7 @@ def sync(name: str, directory: Path, title: str, field_descriptions: dict) -> st
         store.schema_ver = extract_schema_ver_comment(human_text)
         store.save(fields_path)
         new_machine = serialize_packet(store.schema_ver, store.fields)
-        cpn_path.write_text(new_machine, encoding="utf-8")
+        cpn_path.write_text(new_machine, encoding="utf-8", newline="\n")
         Lockfile(human_hash=sha256_text(human_text), machine_hash=sha256_text(new_machine)).save(lock_path)
         return "human-to-machine"
 
