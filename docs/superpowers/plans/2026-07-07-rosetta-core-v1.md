@@ -767,29 +767,27 @@ def test_editing_human_doc_fields_comment_propagates_to_machine_packet(tmp_path:
     assert "0.97" in cpn_text
 
 
-def test_editing_notes_region_does_not_trigger_resync(tmp_path: Path):
+def test_editing_notes_region_resyncs_but_preserves_fields(tmp_path: Path):
+    """Notes-only edits still change the .md file's whole-content hash, so sync
+    runs the human-to-machine path — but the FIELDS comment is untouched, so
+    fields (and therefore the recompiled .cpn) come out identical."""
     _write_fields(tmp_path, "entity_resolution", FIELDS)
     sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
     md_path = tmp_path / "entity_resolution.md"
     text = md_path.read_text(encoding="utf-8")
-    text = text.replace(
-        "<!-- /ROSETTA:AUTO-GENERATED -->\n\n",
-        "<!-- /ROSETTA:AUTO-GENERATED -->\n\n<!-- ROSETTA:NOTES — hand-written, sync never touches this region -->\nnew note\n<!-- /ROSETTA:NOTES -->\n".replace(
-            "<!-- ROSETTA:NOTES — hand-written, sync never touches this region -->\nnew note\n<!-- /ROSETTA:NOTES -->\n", ""
-        ),
-    )
-    # Directly overwrite the notes text between the existing markers instead of the fragile replace above.
     start = text.index("<!-- ROSETTA:NOTES")
     end = text.index("<!-- /ROSETTA:NOTES -->") + len("<!-- /ROSETTA:NOTES -->")
     notes_block = text[start:end]
     new_notes_block = notes_block.split("-->", 1)[0] + "-->\nnew note\n<!-- /ROSETTA:NOTES -->"
     text = text[:start] + new_notes_block + text[end:]
     md_path.write_text(text, encoding="utf-8")
+    cpn_before = (tmp_path / "entity_resolution.cpn").read_text(encoding="utf-8")
 
     result = sync("entity_resolution", tmp_path, "Entity Resolution Policy", DESCRIPTIONS)
 
     assert result == "human-to-machine"
     assert "new note" in md_path.read_text(encoding="utf-8")
+    assert (tmp_path / "entity_resolution.cpn").read_text(encoding="utf-8") == cpn_before
 
 
 def test_both_sides_changed_raises_conflict(tmp_path: Path):
