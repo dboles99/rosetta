@@ -14,7 +14,7 @@ class FieldsStore:
 
     def save(self, path: Path) -> None:
         data = {"schema_ver": self.schema_ver, "fields": self.fields}
-        path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
 
     def fields_with_schema_ver(self) -> dict:
         return {**self.fields, "SCHEMA_VER": self.schema_ver}
