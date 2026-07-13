@@ -31,7 +31,14 @@ def test_full_lifecycle_bootstrap_edit_and_runtime_fallback(tmp_path: Path):
     assert "ID_THRESHOLD=0.92" in prompt
 
     # Corrupt the packet directly, simulating a runtime hotfix gone wrong.
-    (tmp_path / f"{name}.cpn").write_text("SCHEMA_VER=1.0\nTASK=NOT_A_REAL_TASK\n", encoding="utf-8")
+    # Only the TASK value is invalidated; SCOPE and ID_THRESHOLD keep their
+    # original valid values so this isolates the enum-validation failure
+    # rather than also tripping the required-field check.
+    cpn_path = tmp_path / f"{name}.cpn"
+    corrupted = cpn_path.read_text(encoding="utf-8").replace(
+        "TASK=ENTITY_RESOLUTION", "TASK=NOT_A_REAL_TASK"
+    )
+    cpn_path.write_text(corrupted, encoding="utf-8")
 
     # Loader falls back to the human doc rather than serving an invalid packet.
     fallback_prompt = load_prompt(name, tmp_path, SCHEMA)
