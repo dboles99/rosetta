@@ -31,23 +31,25 @@ zero prior context. Update the "Current state" section after every task.
 
 ## Current state
 
-**Last updated:** after Task 10 CLI implementation was recovered, verified, and committed by Codex.
+**Last updated:** after all 12 tasks complete and independently reviewed (spec compliance + code quality) — plan fully checked off.
 
-**Completed (all steps `- [x]`, all reviewed and approved):** Tasks 1-9.
+**Completed (all steps `- [x]`, all reviewed and approved by an independent task-reviewer pass, including Task 10 which Codex implemented during a handoff and was reviewed after the fact):** Tasks 1-12. The rosetta-core V1 (PacketSpec) implementation is functionally complete.
 
-**Completed by Codex continuation:** Task 10 (CLI). `src/rosetta_core/cli.py` and `tests/test_cli.py` were present as untracked files after the handoff; Codex verified the full suite with `PYTHONPATH=src python3 -m pytest -q -s` (`49 passed`), recorded `task-10-report.md`, checked off the plan, and committed the files.
+**Latest commit on `rosetta-core-v1`:** `abe61fe` — "Check off Tasks 10-12 in plan (all 12 tasks now complete)"
 
-**Not started:** Tasks 11 (dogfooding decision log), 12 (end-to-end test).
+**Two cross-cutting fixes already applied — nothing to redo, just don't reintroduce these bugs:**
+- Every production `Path.write_text()` call must pass `newline="\n"` explicitly (Windows would otherwise silently write `\r\n`). Applied in `fields.py`, `lockfile.py`, `sync.py`.
+- `validate_fields()` in `schema.py` coerces stringly-typed values (CPN packets always parse fields as `str`) to the schema's declared `number`/`integer` type before validating. `loader.py`/`cli.py` rely on this — don't add redundant conversion.
 
-**Latest commit on `rosetta-core-v1`:** Task 10 commit — "Add rosetta CLI: sync, compile, validate, expand"
+**Full test suite status:** 50/50 passing as of `0f238a4`. Run `pytest -v` (or `PYTHONPATH=src python3 -m pytest -q -s` if using WSL and pytest capture hits temp-file issues) from the worktree root.
 
-**Two cross-cutting fixes already applied that a fresh implementer must know about** (both already in the code — nothing to redo, just don't reintroduce the bugs):
-- Every production `Path.write_text()` call must pass `newline="\n"` explicitly (Windows would otherwise silently write `\r\n`). Already applied in `fields.py`, `lockfile.py`, `sync.py`. Any new file-writing code must do the same.
-- `validate_fields()` in `schema.py` coerces stringly-typed values (CPN packets always parse fields as `str`) to the schema's declared `number`/`integer` type before validating. This is why `loader.py` and any future CLI/validation code does not need to do its own type conversion — just pass parsed fields straight to `validate_fields`.
+**Remaining before this whole effort is done (in order):**
+1. **Benchmark suite** (not started, not yet designed) — the user requested a second, separate body of work: design and build a benchmark comparing human-readable vs. machine-readable prompt performance (read/implementation speed, efficiency, completeness) across Azure Translation, Azure OpenAI, Claude, Codex, Cline, and Ollama, with a schema, a rubric, and a results spreadsheet. This needs its own brainstorming/planning pass — it is NOT part of the rosetta-core-v1 plan/branch and likely doesn't belong in this repo at all (probably its own project/repo, TBD during its design). If you're picking this up cold: don't start coding it, start by clarifying scope with the user the way the rest of this project was brainstormed (see the design spec's own history for the pattern).
+2. **Final whole-branch code review** of the `rosetta-core-v1` branch (all 12 tasks together), then `superpowers:finishing-a-development-branch` to merge/PR/clean up. Do this only after the benchmark suite work above is also complete — the user explicitly asked for this ordering.
 
-**Full test suite status:** 49/49 passing after Task 10. Run `PYTHONPATH=src python3 -m pytest -q -s` from the worktree root if pytest capture hits temp-file issues in WSL.
+## If you are Codex picking this up cold
 
-**After Task 12 completes:** the user has requested a separate, second body of work — designing and building a benchmark suite comparing human-readable vs. machine-readable prompt performance across Azure Translation, Azure OpenAI, Claude, Codex, Cline, and Ollama (read/implementation speed, efficiency, completeness), with a schema, a rubric, and a results spreadsheet. This has **not been designed yet** — it needs its own brainstorming/planning pass, not a continuation of this plan's tasks. Do not start it before Task 12 is done; do the final whole-branch review only after both this plan's Task 12 and the benchmark work are complete.
+The plan's 12 tasks are all done and checked off — there is nothing left to implement in `docs/superpowers/plans/2026-07-07-rosetta-core-v1.md`. What's left is (1) a brand-new, undesigned benchmark-suite project (needs requirements clarification first, not code) and (2) the final review/merge of this branch. Don't re-run or redo any of Tasks 1-12.
 
 ## If you are Codex picking this up cold
 
