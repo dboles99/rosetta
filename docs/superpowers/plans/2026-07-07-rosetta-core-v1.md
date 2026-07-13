@@ -1192,7 +1192,7 @@ git commit -m "Add rosetta CLI: sync, compile, validate, expand"
 - Consumes: `rosetta` CLI (Task 10).
 - Produces: a real, running example of the PacketSpec kind, used as the worked example in Task 12's end-to-end test and as proof the system works on itself.
 
-- [ ] **Step 1: Write `docs/decisions/rosetta_build.schema.json`**
+- [x] **Step 1: Write `docs/decisions/rosetta_build.schema.json`**
 
 ```json
 {
@@ -1207,7 +1207,7 @@ git commit -m "Add rosetta CLI: sync, compile, validate, expand"
 }
 ```
 
-- [ ] **Step 2: Write `docs/decisions/rosetta_build.fields.json`**
+- [x] **Step 2: Write `docs/decisions/rosetta_build.fields.json`**
 
 ```json
 {
@@ -1220,12 +1220,12 @@ git commit -m "Add rosetta CLI: sync, compile, validate, expand"
 }
 ```
 
-- [ ] **Step 3: Run `rosetta compile` to generate the human and machine views**
+- [x] **Step 3: Run `rosetta compile` to generate the human and machine views**
 
 Run: `rosetta compile rosetta_build --dir docs/decisions`
 Expected: prints `sync: bootstrap`; creates `docs/decisions/rosetta_build.md`, `docs/decisions/rosetta_build.cpn`, `docs/decisions/rosetta_build.rosetta.lock`.
 
-- [ ] **Step 4: Hand-edit the generated `.md`'s notes region to record the actual decisions**
+- [x] **Step 4: Hand-edit the generated `.md`'s notes region to record the actual decisions**
 
 Open `docs/decisions/rosetta_build.md` and replace the empty notes region content (between the `ROSETTA:NOTES` markers) with:
 
@@ -1239,7 +1239,7 @@ Open `docs/decisions/rosetta_build.md` and replace the empty notes region conten
    the full differing-key list is surfaced and resolution is manual.
 ```
 
-- [ ] **Step 5: Verify the artifact validates, then re-sync to pick up the notes edit**
+- [x] **Step 5: Verify the artifact validates, then re-sync to pick up the notes edit**
 
 Run: `rosetta validate rosetta_build --dir docs/decisions`
 Expected: `valid`
@@ -1247,7 +1247,7 @@ Expected: `valid`
 Run: `rosetta sync rosetta_build --dir docs/decisions`
 Expected: `sync: human-to-machine`. This is correct, not a bug: Task 8's `sync()` hashes the whole `.md` file, not the auto-section alone, so editing the notes region still changes `human_hash` relative to the lock. Sync re-derives fields from the (unchanged) `ROSETTA:FIELDS` comment and rewrites `.cpn` with byte-identical content, then records the new `human_hash` in the lockfile. Running `rosetta sync` a second time immediately after this one should print `sync: no-op`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add docs/decisions/rosetta_build.fields.json docs/decisions/rosetta_build.schema.json docs/decisions/rosetta_build.md docs/decisions/rosetta_build.cpn docs/decisions/rosetta_build.rosetta.lock
@@ -1266,7 +1266,7 @@ git commit -m "Dogfood: record Rosetta's own build decisions as a PacketSpec art
 **Interfaces:**
 - Consumes: `sync`/`SyncConflict` (Task 8), `load_prompt` (Task 9), `FieldsStore` (Task 4).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```python
 # tests/test_end_to_end.py
@@ -1311,19 +1311,19 @@ def test_full_lifecycle_bootstrap_edit_and_runtime_fallback(tmp_path: Path):
     assert "Entity Resolution Policy" in fallback_prompt
 ```
 
-- [ ] **Step 2: Run test to verify it passes immediately**
+- [x] **Step 2: Run test to verify it passes immediately**
 
 This task adds no new production code — `sync()` (Task 8) and `load_prompt()` (Task 9) are already implemented and independently tested. This test only verifies they compose correctly end-to-end, so unlike every other task in this plan, it should pass on the first run rather than fail first.
 
 Run: `pytest tests/test_end_to_end.py -v`
 Expected: PASS immediately. `load_prompt` returns the `.cpn` contents on the first call (packet is valid), then after `TASK` is corrupted to `NOT_A_REAL_TASK`, `parse_packet` still succeeds (it doesn't validate values) but `validate_fields` rejects `NOT_A_REAL_TASK` against the `TASK` enum, so `load_prompt` falls through to `.md`. If this fails instead, the bug is in Task 8 or Task 9's already-committed code, not in this test — stop and fix the earlier task.
 
-- [ ] **Step 3: Run the full test suite**
+- [x] **Step 3: Run the full test suite**
 
 Run: `pytest -v`
 Expected: all tests across every task pass.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add tests/test_end_to_end.py
