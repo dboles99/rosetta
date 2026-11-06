@@ -31,7 +31,7 @@ For one artifact called `<name>` it manages four files in a directory:
 Needs Python 3.11 or later.
 
 ```bash
-git clone <this repository>
+git clone https://github.com/dboles99/rosetta.git
 cd rosetta
 python -m venv .venv
 .venv/bin/pip install -e ".[dev]"      # Windows: .venv\Scripts\pip install -e ".[dev]"
