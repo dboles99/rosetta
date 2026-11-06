@@ -1,0 +1,4 @@
+SCHEMA_VER=1.0
+CONFLICT_POLICY=explicit,no-auto-merge
+DECISION_COUNT=3
+FIELD_VALUE_TYPES=str,int,float

@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "required": ["DECISION_COUNT", "SCHEMA_VER"],
+  "properties": {
+    "DECISION_COUNT": {"type": "integer", "minimum": 0},
+    "FIELD_VALUE_TYPES": {"type": "string"},
+    "CONFLICT_POLICY": {"type": "string"},
+    "SCHEMA_VER": {"type": "string", "pattern": "^\\d+\\.\\d+$"}
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "fields": {
+    "CONFLICT_POLICY": "explicit,no-auto-merge",
+    "DECISION_COUNT": 3,
+    "FIELD_VALUE_TYPES": "str,int,float"
+  },
+  "schema_ver": "1.0"
+}
