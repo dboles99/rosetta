@@ -1,5 +1,7 @@
 # rosetta-core
 
+**[Read the wiki](https://github.com/dboles99/rosetta/wiki)** for how it works, the evidence, the design decisions and the limits.
+
 A small Python package that keeps a compact machine-readable prompt packet and a human-readable Markdown document in sync, and refuses to guess when both have changed.
 
 **简体中文：** rosetta-core 为同一份提示词或元数据维护两种形式：给模型读的紧凑 `KEY=VALUE` 数据包（`.cpn`），和给人读的 Markdown 文档。任一方被修改后，`rosetta sync` 会把改动同步到另一方；如果两边都改了，它会报告冲突，而不是自动合并。
