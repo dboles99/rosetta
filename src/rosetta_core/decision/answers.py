@@ -17,6 +17,9 @@ from typing import Mapping, Union
 from .contracts import Primitive, QuestionSet
 
 DEFAULT_SUM_TOLERANCE = 0.02
+# A selected option may trail the top probability by rounding noise without the answer
+# being inconsistent; beyond this gap the provider contradicted its own distribution.
+ARGMAX_TOLERANCE = 1e-3
 
 
 @dataclass(frozen=True)
@@ -42,7 +45,6 @@ class ScoreAnswer:
 
 
 Answer = Union[NoulAnswer, ChoiceAnswer, ScoreAnswer]
-_EXPECTED = {Primitive.NOUL: NoulAnswer, Primitive.CHOICE: ChoiceAnswer, Primitive.SCORE: ScoreAnswer}
 
 
 class ErrorKind(str, Enum):
@@ -125,7 +127,7 @@ def _validate_choice(answer: ChoiceAnswer, options: tuple[str, ...], out: list[V
         elif set(probs) != set(options):
             out.append(Violation(answer.qid, "INCOMPLETE_DISTRIBUTION", "not every option has a probability"))
         elif _check_distribution(answer.qid, list(probs.values()), out, tolerance):
-            if answer.selected in probs and probs[answer.selected] < max(probs.values()):
+            if answer.selected in probs and probs[answer.selected] < max(probs.values()) - ARGMAX_TOLERANCE:
                 out.append(Violation(answer.qid, "SELECTED_NOT_ARGMAX", answer.selected))
     _check_confidence(answer, out)
 
@@ -157,14 +159,13 @@ def validate_batch(batch: AnswerBatch, qset: QuestionSet, *, sum_tolerance: floa
         if answer is None:
             violations.append(Violation(question.qid, "MISSING"))
             continue
-        if not isinstance(answer, _EXPECTED[question.primitive]):
-            violations.append(Violation(question.qid, "WRONG_PRIMITIVE", type(answer).__name__))
-            continue
-        if question.primitive is Primitive.NOUL:
+        if question.primitive is Primitive.NOUL and isinstance(answer, NoulAnswer):
             if not _is_unit_interval(answer.p_yes):
                 violations.append(Violation(question.qid, "BAD_PROBABILITY", repr(answer.p_yes)))
-        elif question.primitive is Primitive.CHOICE:
+        elif question.primitive is Primitive.CHOICE and isinstance(answer, ChoiceAnswer):
             _validate_choice(answer, question.options, violations, sum_tolerance)
-        else:
+        elif question.primitive is Primitive.SCORE and isinstance(answer, ScoreAnswer):
             _validate_score(answer, question.levels, violations, sum_tolerance)
+        else:
+            violations.append(Violation(question.qid, "WRONG_PRIMITIVE", type(answer).__name__))
     return violations

@@ -89,6 +89,13 @@ def test_selected_option_must_have_the_highest_probability():
     assert _codes(_batch(workflow_route=bad)) == {"SELECTED_NOT_ARGMAX"}
 
 
+def test_a_rounding_near_tie_is_not_reported_as_inconsistent():
+    near_tie = ChoiceAnswer("workflow_route", "clarify", {"code_change": 0.4, "clarify": 0.399999 + 0.200001}, 0.2)
+    assert validate_batch(_batch(workflow_route=near_tie), QSET) == []
+    rounded = ChoiceAnswer("workflow_route", "clarify", {"code_change": 0.5004, "clarify": 0.4996}, 0.0)
+    assert validate_batch(_batch(workflow_route=rounded), QSET) == []
+
+
 def test_choice_without_distribution_is_allowed():
     sparse = ChoiceAnswer("workflow_route", "clarify", None, None)
     assert validate_batch(_batch(workflow_route=sparse), QSET) == []
