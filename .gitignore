@@ -4,3 +4,16 @@ __pycache__/
 .pytest_cache/
 .coverage
 *.egg-info/
+
+# --- secrets: added by foundry-sandbox rollout (model_chain) ---
+.env
+.env.*
+!.env.example
+.env.bak-model-chain-*
+*ledger.jsonl
+# Jev / jevmodel.org credential notes (2026-11-09)
+*_credentials_*.md
+jev-typescript_credentials_*.md
+
+# Anchor live session state is local-only
+.anchor/session-state.md
