@@ -122,6 +122,17 @@ RECEIPT_SCHEMA: dict = {
             },
         },
         "override": _NULLABLE_STR,
+        # Optional, added for the canonical decision cache; receipts without it stay valid.
+        "cache": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["status"],
+            "properties": {
+                "status": {"enum": ["off", "miss", "hit"]},
+                "key": {"anyOf": [_HASH, {"type": "null"}]},
+                "source_receipt_id": _NULLABLE_STR,
+            },
+        },
     },
 }
 

@@ -116,5 +116,12 @@ def test_assert_no_secrets_passes_a_clean_receipt():
     assert_no_secrets(_receipt(), forbidden=("alice@example.com",))
 
 
+def test_cache_status_is_optional_and_validated():
+    validate_receipt(_receipt())  # receipts written before the cache existed stay valid
+    validate_receipt(_receipt(cache={"status": "hit", "key": H, "source_receipt_id": "r-0"}))
+    with pytest.raises(ReceiptInvalid):
+        validate_receipt(_receipt(cache={"status": "warm"}))
+
+
 def test_new_receipt_ids_are_unique():
     assert len({new_receipt_id() for _ in range(100)}) == 100
